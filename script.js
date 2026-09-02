@@ -1,3 +1,31 @@
+if (typeof window.storage === 'undefined') {
+  window.storage = {
+    async get(key) {
+      const raw = localStorage.getItem(key);
+      if (raw === null) return null;
+      return { key, value: raw };
+    },
+    async set(key, value) {
+      localStorage.setItem(key, value);
+      return { key, value };
+    },
+    async delete(key) {
+      const existed = localStorage.getItem(key) !== null;
+      localStorage.removeItem(key);
+      return { key, deleted: existed };
+    },
+    async list(prefix) {
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!prefix || k.startsWith(prefix)) keys.push(k);
+      }
+      return { keys, prefix: prefix || null };
+    }
+  };
+}
+
+
 let currentEssayId = null;
 let currentPhotos = []; // { id, name, dataUrl }
 let timerInterval = null;
