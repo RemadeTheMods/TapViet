@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tập Viết</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #EDEAE1;
+    --paper-card: #F7F4EC;
+    --ink: #262420;
+    --ink-soft: #58544B;
+    --ink-faint: #8C8778;
+    --rule: #D8D2C1;
+    --rule-strong: #C3BCA7;
+    --ribbon: #A13D3D;
+    --ribbon-soft: #C97A73;
+    --ribbon-bg: #F3E4E0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', serif;
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .app {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 4rem;
+  }
+
+  header.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--rule-strong);
+    padding-bottom: 1.1rem;
+    margin-bottom: 2.2rem;
+  }
+  header.top h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.01em;
+  }
+  header.top .tagline {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--ink-faint);
+    text-transform: lowercase;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 780px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--paper-card);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1.1rem 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+  .panel h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    margin: 0 0 0.8rem;
+    font-weight: 500;
+  }
+
+  textarea#question {
+    width: 100%;
+    min-height: 180px;
+    border: none;
+    background: transparent;
+    resize: vertical;
+    font-family: 'Source Serif 4', serif;
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: var(--ink);
+    outline: none;
+  }
+  textarea#question::placeholder { color: var(--ink-faint); }
+
+  select.mono {
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--rule-strong);
+    background: #fff;
+    color: var(--ink);
+    border-radius: 2px;
+    font-size: 0.72rem;
+    margin-bottom: 0.6rem;
+  }
+  button {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.03em;
+    border: 1px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    padding: 0.5rem 0.8rem;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  button:hover { background: var(--ink); color: var(--paper-card); }
+  button.primary {
+    background: var(--ribbon);
+    border-color: var(--ribbon);
+    color: #fff;
+  }
+  button.primary:hover { background: #832F2F; border-color: #832F2F; color: #fff; }
+  button.ghost { border-color: var(--rule-strong); color: var(--ink-soft); }
+  button.ghost:hover { background: var(--rule); color: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  button:disabled:hover { background: transparent; color: var(--ink); }
+  button.ghost:disabled:hover { background: transparent; color: var(--ink-soft); }
+  button.full { width: 100%; }
+
+  .goal-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+  }
+  .goal-row input[type="number"] {
+    width: 70px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.4rem;
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    background: #fff;
+    color: var(--ink);
+  }
+  .bar-track {
+    height: 6px;
+    background: var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 0.7rem;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--ribbon);
+    width: 0%;
+    transition: width 0.2s ease;
+  }
+  .goal-caption {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--ink-faint);
+    margin-top: 0.4rem;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+  .stat .num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.15rem;
+    font-weight: 500;
+  }
+  .stat .lbl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--ink-faint);
+    text-transform: lowercase;
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .history-item {
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 0.5rem 0.6rem;
+    cursor: pointer;
+    background: #fff;
+  }
+  .history-item:hover { border-color: var(--ribbon-soft); }
+  .history-item .htitle {
+    font-size: 0.82rem;
+    margin-bottom: 0.15rem;
+    line-height: 1.3;
+  }
+  .history-item .hquestion {
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    line-height: 1.35;
+    margin-bottom: 0.3rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .history-item .hmeta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--ink-faint);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .hphoto-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .history-item-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.35rem;
+  }
+  .delete-link {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--ink-faint);
+    background: none;
+    border: none;
+    padding: 0;
+    text-decoration: underline;
+  }
+  .delete-link:hover { background: none; color: var(--ribbon); }
+  .empty-note {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    line-height: 1.5;
+  }
+
+  .paper-wrap {
+    background: var(--paper-card);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1.4rem 1.6rem 1.2rem;
+  }
+  .paper-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.9rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .title-input {
+    font-family: 'Source Serif 4', serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    width: 60%;
+    outline: none;
+  }
+  .title-input::placeholder { color: var(--ink-faint); font-weight: 400; }
+  .toolbar-actions { display: flex; gap: 0.5rem; }
+
+  textarea#essay {
+    width: 100%;
+    min-height: 380px;
+    border: none;
+    background: transparent;
+    resize: vertical;
+    font-family: 'Source Serif 4', serif;
+    font-size: 1.08rem;
+    line-height: 1.75;
+    color: var(--ink);
+    outline: none;
+  }
+  textarea#essay::placeholder { color: var(--ink-faint); }
+
+  .photos-section {
+    border-top: 1px solid var(--rule);
+    padding-top: 0.9rem;
+    margin-top: 0.6rem;
+  }
+  .photos-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.7rem;
+  }
+  .photos-header h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    margin: 0;
+    font-weight: 500;
+  }
+  .photos-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .photo-thumb {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid var(--rule);
+    background: #fff;
+  }
+  .photo-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+  }
+  .photo-remove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(38,36,32,0.72);
+    color: #fff;
+    border: none;
+    font-size: 0.7rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+  }
+  .photo-remove:hover { background: var(--ribbon); }
+
+  .paper-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--rule);
+    padding-top: 0.8rem;
+    margin-top: 0.9rem;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+  .metrics {
+    display: flex;
+    gap: 1.3rem;
+    flex-wrap: wrap;
+  }
+  .metric {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+  }
+  .metric b { color: var(--ink); font-weight: 500; }
+
+  .save-status {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--ink-faint);
+  }
+  .save-status.saved { color: var(--ribbon); }
+
+  .timer-display {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+  .timer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(38,36,32,0.85);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 2rem;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 3px;
+  }
+  .hidden {
+    display : none;
+  }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--rule-strong); border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <h1>Tập Viết</h1>
+    <div class="tagline">by Rev</div>
+  </header>
+
+  <div class="layout">
+
+
+    <div class="sidebar">
+	  <button id="task1" onclick="change1()" class="mono">Task 1</button>
+      <button id="task2" onclick="change2()" class="ghost mono">Task 2</button>
+
+      <div class="panel">
+
+        <h2>Question</h2>
+        <textarea id="question" placeholder="Enter Your Question Here."></textarea>
+      </div>
+	  
+	  <div class="panel" id = "photo">
+        <div class="photos-header">
+          <h2>Photos</h2>
+          <button class="ghost mono" id="add-photo-btn">+ Add photo</button>
+          <input type="file" id="photo-input" accept="image/*" multiple hidden>
+        </div>
+        <div class="photos-grid" id="photos-grid">
+          <p class="empty-note" id="photos-empty">No photos attached.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Goal</h2>
+        <div class="goal-row">
+          <input type="number" id="goal-input" class="mono" min="0" step="10" value="300">
+          <span class="mono" style="font-size:0.72rem;color:var(--ink-faint);">words</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" id="goal-bar"></div></div>
+        <div class="goal-caption" id="goal-caption">0 / 300 words</div>
+      </div>
+
+      <div class="panel">
+        <h2>Timer</h2>
+        <div class="timer-row">
+          <span class="timer-display" id="timer-display">40:00</span>
+          <div style="display:flex; gap:0.4rem;">
+            <button id="timer-toggle" class="mono">Start</button>
+            <button id="timer-reset" class="ghost mono">Reset</button>
+          </div>
+        </div>
+        <select class="mono" id="timer-length" style="margin-top:0.6rem;">
+          <option value="900">15 minutes</option>
+          <option value="1200">20 minutes</option>
+          <option value="1500">25 minutes</option>
+          <option value="2400" selected>40 minutes</option>
+          <option value="3000">50 minutes</option>
+          <option value="3600">60 minutes</option>
+        </select>
+      </div>
+
+      <div class="panel">
+        <h2>All-time</h2>
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="num mono" id="stat-essays">0</div>
+            <div class="lbl">essays saved</div>
+          </div>
+          <div class="stat">
+            <div class="num mono" id="stat-words">0</div>
+            <div class="lbl">total words</div>
+          </div>
+          <div class="stat">
+            <div class="num mono" id="stat-streak">0</div>
+            <div class="lbl">day streak</div>
+          </div>
+          <div class="stat">
+            <div class="num mono" id="stat-avg">0</div>
+            <div class="lbl">avg words</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Past essays</h2>
+        <div class="history-list" id="history-list"><p class="empty-note">Nothing saved yet.</p></div>
+      </div>
+
+    </div>
+
+    <div class="paper-wrap">
+      <div class="paper-toolbar">
+        <input type="text" id="essay-title" class="title-input" placeholder="Essay name">
+        <div class="toolbar-actions">
+          <button class="ghost mono" id="new-essay-btn">New</button>
+          <button class="primary mono" id="save-btn">Save</button>
+        </div>
+      </div>
+
+      <textarea id="essay" placeholder="Start writing here."></textarea>
+
+      <div class="paper-footer">
+        <div class="metrics">
+          <span class="metric"><b id="m-words">0</b> words</span>
+          <span class="metric"><b id="m-chars">0</b> characters</span>
+          <span class="metric"><b id="m-sentences">0</b> sentences</span>
+          <span class="metric"><b id="m-paragraphs">0</b> paragraphs</span>
+          <span class="metric"><b id="m-read">0 min</b> read</span>
+        </div>
+        <span class="save-status mono" id="save-status">unsaved changes</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+let currentEssayId = null;
+let currentPhotos = []; // { id, name, dataUrl }
+let timerInterval = null;
+let timerRemaining = 2400;
+let timerRunning = false;
+
+const els = {
+  question: document.getElementById('question'),
+  goalInput: document.getElementById('goal-input'),
+  goalBar: document.getElementById('goal-bar'),
+  goalCaption: document.getElementById('goal-caption'),
+  essay: document.getElementById('essay'),
+  essayTitle: document.getElementById('essay-title'),
+  saveBtn: document.getElementById('save-btn'),
+  newEssayBtn: document.getElementById('new-essay-btn'),
+  saveStatus: document.getElementById('save-status'),
+  historyList: document.getElementById('history-list'),
+  statEssays: document.getElementById('stat-essays'),
+  statWords: document.getElementById('stat-words'),
+  statStreak: document.getElementById('stat-streak'),
+  statAvg: document.getElementById('stat-avg'),
+  timerDisplay: document.getElementById('timer-display'),
+  timerToggle: document.getElementById('timer-toggle'),
+  timerReset: document.getElementById('timer-reset'),
+  timerLength: document.getElementById('timer-length'),
+  mWords: document.getElementById('m-words'),
+  mChars: document.getElementById('m-chars'),
+  mSentences: document.getElementById('m-sentences'),
+  mParagraphs: document.getElementById('m-paragraphs'),
+  mRead: document.getElementById('m-read'),
+  addPhotoBtn: document.getElementById('add-photo-btn'),
+  photoInput: document.getElementById('photo-input'),
+  photosGrid: document.getElementById('photos-grid'),
+  lightbox: document.getElementById('lightbox'),
+  lightboxImg: document.getElementById('lightbox-img'),
+  
+};
+
+
+// Đổi bài 
+function change1() {
+  const div = document.getElementById('photo');
+  div.style.display = 'block'; 
+
+  const task1 = document.getElementById('task1');
+  const task2 = document.getElementById('task2');
+  
+  task1.className = 'mono';
+  task2.className = 'ghost mono';
+}
+function change2() {
+  const div = document.getElementById('photo');
+  div.style.display = 'none'; 
+  
+  const task1 = document.getElementById('task1');
+  const task2 = document.getElementById('task2');
+  
+  task2.className = 'mono';
+  task1.className = 'ghost mono';
+}
+
+// đếm
+function countWords(text) {
+  const trimmed = text.trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+function countSentences(text) {
+  const trimmed = text.trim();
+  if (!trimmed) return 0;
+  const matches = trimmed.match(/[^.!?]+[.!?]+/g);
+  if (matches) return matches.length;
+  return trimmed.length > 0 ? 1 : 0;
+}
+function countParagraphs(text) {
+  const trimmed = text.trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\n\s*\n/).filter(p => p.trim().length > 0).length;
+}
+
+// update
+function updateMetrics() {
+  const text = els.essay.value;
+  const words = countWords(text);
+  const chars = text.length;
+  const sentences = countSentences(text);
+  const paragraphs = countParagraphs(text);
+  const readMins = Math.max(1, Math.round(words / 200));
+
+  els.mWords.textContent = words.toLocaleString();
+  els.mChars.textContent = chars.toLocaleString();
+  els.mSentences.textContent = sentences.toLocaleString();
+  els.mParagraphs.textContent = paragraphs.toLocaleString();
+  els.mRead.textContent = words === 0 ? '0 min' : readMins + ' min';
+
+  const goal = Math.max(0, parseInt(els.goalInput.value) || 0);
+  const pct = goal > 0 ? Math.min(100, Math.round((words / goal) * 100)) : 0;
+  els.goalBar.style.width = pct + '%';
+  els.goalCaption.textContent = words.toLocaleString() + ' / ' + goal.toLocaleString() + ' words' + (goal > 0 && words >= goal ? ' — goal reached' : '');
+
+  markUnsaved();
+  return { words, chars, sentences, paragraphs };
+}
+// save
+function markUnsaved() {
+  els.saveStatus.textContent = 'unsaved changes';
+  els.saveStatus.classList.remove('saved');
+}
+// tg
+function formatTime(secs) {
+  const m = Math.floor(secs / 60).toString().padStart(2, '0');
+  const s = Math.floor(secs % 60).toString().padStart(2, '0');
+  return m + ':' + s;
+}
+
+function updateTimerDisplay() {
+  els.timerDisplay.textContent = formatTime(timerRemaining);
+}
+
+function toggleTimer() {
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    els.timerToggle.textContent = 'Start';
+  } else {
+    timerRunning = true;
+    els.timerToggle.textContent = 'Pause';
+    timerInterval = setInterval(() => {
+      timerRemaining--;
+      updateTimerDisplay();
+      if (timerRemaining <= 0) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        els.timerToggle.textContent = 'Start';
+        els.timerDisplay.textContent = "time's up";
+      }
+    }, 1000);
+  }
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  els.timerToggle.textContent = 'Start';
+  timerRemaining = parseInt(els.timerLength.value);
+  updateTimerDisplay();
+}
+
+function genId() {
+  return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+// --- photos ---
+
+function resizeImageFile(file, maxDim, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) { height = Math.round(height * maxDim / width); width = maxDim; }
+          else { width = Math.round(width * maxDim / height); height = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => reject(new Error('Could not read image'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Could not read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handlePhotoFiles(fileList) {
+  const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+  for (const file of files) {
+    try {
+      const dataUrl = await resizeImageFile(file, 1400, 0.85);
+      currentPhotos.push({ id: genId(), name: file.name, dataUrl });
+    } catch (e) {
+      console.error('Photo failed to load:', file.name, e);
+    }
+  }
+  renderPhotos();
+  markUnsaved();
+}
+
+function removePhoto(id) {
+  currentPhotos = currentPhotos.filter(p => p.id !== id);
+  renderPhotos();
+  markUnsaved();
+}
+
+function renderPhotos() {
+  if (currentPhotos.length === 0) {
+    els.photosGrid.innerHTML = '<p class="empty-note" id="photos-empty">No photos attached.</p>';
+    return;
+  }
+  els.photosGrid.innerHTML = '';
+  currentPhotos.forEach(photo => {
+    const thumb = document.createElement('div');
+    thumb.className = 'photo-thumb';
+    const img = document.createElement('img');
+    img.src = photo.dataUrl;
+    img.alt = photo.name || 'attached photo';
+    img.addEventListener('click', () => openLightbox(photo.dataUrl));
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'photo-remove';
+    removeBtn.textContent = '×';
+    removeBtn.title = 'Remove photo';
+    removeBtn.addEventListener('click', (e) => { e.stopPropagation(); removePhoto(photo.id); });
+    thumb.appendChild(img);
+    thumb.appendChild(removeBtn);
+    els.photosGrid.appendChild(thumb);
+  });
+}
+
+function openLightbox(src) {
+  els.lightboxImg.src = src;
+  els.lightbox.classList.add('open');
+}
+function closeLightbox() {
+  els.lightbox.classList.remove('open');
+  els.lightboxImg.src = '';
+}
+
+//storage
+
+async function getAllEssayIds() {
+  try {
+    const result = await window.storage.list('essays:');
+    return result ? result.keys : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+async function loadHistory() {
+  const keys = await getAllEssayIds();
+  const items = [];
+  for (const key of keys) {
+    try {
+      const res = await window.storage.get(key);
+      if (res && res.value) items.push(JSON.parse(res.value));
+    } catch (e) {}
+  }
+  items.sort((a, b) => b.savedAt - a.savedAt);
+  renderHistory(items);
+  renderStats(items);
+}
+
+function renderHistory(items) {
+  if (items.length === 0) {
+    els.historyList.innerHTML = '<p class="empty-note">Nothing saved yet.</p>';
+    return;
+  }
+  els.historyList.innerHTML = '';
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    const date = new Date(item.savedAt);
+    const dateStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const photoCount = (item.photos || []).length;
+    const photoBadge = photoCount > 0 ? '<span class="hphoto-badge">📎 ' + photoCount + '</span>' : '';
+    div.innerHTML =
+      '<div class="htitle">' + escapeHtml(item.title || 'Untitled piece') + '</div>' +
+      (item.question ? '<div class="hquestion">' + escapeHtml(item.question) + '</div>' : '') +
+      '<div class="hmeta"><span>' + dateStr + '</span><span style="display:flex;gap:0.5rem;align-items:center;">' + photoBadge + '<span>' + item.wordCount + ' words</span></span></div>' +
+      '<div class="history-item-actions"><button class="delete-link" data-id="' + item.id + '">delete</button></div>';
+    div.addEventListener('click', (e) => {
+      if (e.target.classList.contains('delete-link')) return;
+      loadEssay(item);
+    });
+    div.querySelector('.delete-link').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (confirm('Delete "' + (item.title || 'Untitled piece') + '"? This cannot be undone.')) {
+        await deleteEssay(item.id);
+      }
+    });
+    els.historyList.appendChild(div);
+  });
+}
+
+async function deleteEssay(id) {
+  try {
+    await window.storage.delete('essays:' + id);
+    if (currentEssayId === id) startNewEssay();
+    loadHistory();
+  } catch (e) {
+    console.error('Delete failed', e);
+  }
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function renderStats(items) {
+  const totalEssays = items.length;
+  const totalWords = items.reduce((sum, i) => sum + (i.wordCount || 0), 0);
+  const avgWords = totalEssays > 0 ? Math.round(totalWords / totalEssays) : 0;
+
+  const days = new Set(items.map(i => new Date(i.savedAt).toDateString()));
+  let streak = 0;
+  let cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  while (days.has(cursor.toDateString())) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  els.statEssays.textContent = totalEssays.toLocaleString();
+  els.statWords.textContent = totalWords.toLocaleString();
+  els.statStreak.textContent = streak.toLocaleString();
+  els.statAvg.textContent = avgWords.toLocaleString();
+}
+
+function loadEssay(item) {
+  currentEssayId = item.id;
+  els.essayTitle.value = item.title || '';
+  els.question.value = item.question || '';
+  els.essay.value = item.text || '';
+  currentPhotos = (item.photos || []).map(p => ({ ...p }));
+  renderPhotos();
+  updateMetrics();
+  els.saveStatus.textContent = 'loaded';
+  els.saveStatus.classList.add('saved');
+}
+
+function startNewEssay() {
+  currentEssayId = null;
+  els.essayTitle.value = '';
+  els.question.value = '';
+  els.essay.value = '';
+  currentPhotos = [];
+  renderPhotos();
+  updateMetrics();
+  els.saveStatus.textContent = '';
+  els.saveStatus.classList.remove('saved');
+  els.essay.focus();
+}
+
+async function saveEssay() {
+  const text = els.essay.value;
+  const question = els.question.value;
+  if (text.trim().length === 0 && question.trim().length === 0) {
+    els.saveStatus.textContent = 'nothing to save';
+    els.saveStatus.classList.remove('saved');
+    return;
+  }
+  const metrics = updateMetrics();
+  const id = currentEssayId || genId();
+  const title = els.essayTitle.value.trim() ||
+    (text.trim() ? text.trim().split(/\s+/).slice(0, 6).join(' ') + '…' : 'Untitled piece');
+  const record = {
+    id: id,
+    title: title,
+    question: question,
+    text: text,
+    photos: currentPhotos,
+    wordCount: metrics.words,
+    savedAt: Date.now()
+  };
+  try {
+    await window.storage.set('essays:' + id, JSON.stringify(record));
+    currentEssayId = id;
+    els.saveStatus.textContent = 'saved';
+    els.saveStatus.classList.add('saved');
+    loadHistory();
+  } catch (e) {
+    els.saveStatus.textContent = 'save failed — try smaller photos';
+    els.saveStatus.classList.remove('saved');
+  }
+}
+
+els.essay.addEventListener('input', updateMetrics);
+els.question.addEventListener('input', markUnsaved);
+els.essayTitle.addEventListener('input', markUnsaved);
+els.goalInput.addEventListener('input', updateMetrics);
+els.saveBtn.addEventListener('click', saveEssay);
+els.newEssayBtn.addEventListener('click', startNewEssay);
+els.timerToggle.addEventListener('click', toggleTimer);
+els.timerReset.addEventListener('click', resetTimer);
+els.timerLength.addEventListener('change', resetTimer);
+
+els.addPhotoBtn.addEventListener('click', () => els.photoInput.click());
+els.photoInput.addEventListener('change', (e) => {
+  if (e.target.files && e.target.files.length) {
+    handlePhotoFiles(e.target.files);
+  }
+  e.target.value = '';
+});
+
+els.lightbox.addEventListener('click', closeLightbox);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeLightbox();
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+    e.preventDefault();
+    saveEssay();
+  }
+});
+
+updateMetrics();
+updateTimerDisplay();
+loadHistory();
+</script>
+
+</body>
+</html>
