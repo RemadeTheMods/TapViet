@@ -1,4 +1,3 @@
-
   :root {
     --paper: #EDEAE1;
     --paper-card: #F7F4EC;
@@ -19,20 +18,37 @@
     font-family: 'Source Serif 4', serif;
   }
   .mono { font-family: 'IBM Plex Mono', monospace; }
-  .app {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 2.5rem 2rem 4rem;
-  }
 
-  header.top {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    border-bottom: 1px solid var(--rule-strong);
-    padding-bottom: 1.1rem;
-    margin-bottom: 2.2rem;
-  }
+.app {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 2.5rem 0 4rem;
+}
+
+/* 2. Keep top header centered at 1120px */
+header.top {
+  max-width: 1120px;
+  margin: 0 auto 2.2rem;
+  padding: 0 2rem 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+/* 3. Add left padding (gap) to .layout */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(auto, 828px);
+  gap: 2rem;
+  align-items: start;
+  max-width: calc(50vw + 560px);
+  margin-right: auto;
+  
+  /* Adjust 1.5rem / 24px to whatever gap size you prefer */
+  padding-left: 1.5rem; 
+}
   header.top h1 {
     font-size: 1.5rem;
     font-weight: 600;
@@ -46,20 +62,18 @@
     text-transform: lowercase;
   }
 
+@media (max-width: 780px) {
   .layout {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 2rem;
-    align-items: start;
+    grid-template-columns: 1fr;
+    max-width: 100%;
+    padding: 0 1rem;
   }
-  @media (max-width: 780px) {
-    .layout { grid-template-columns: 1fr; }
-  }
+}
 
   .panel {
     background: var(--paper-card);
     border: 1px solid var(--rule);
-    border-radius: 3px;
+    border-radius: 15px;
     padding: 1.1rem 1.2rem;
     margin-bottom: 1.2rem;
   }
@@ -92,7 +106,7 @@
     border: 1px solid var(--rule-strong);
     background: #fff;
     color: var(--ink);
-    border-radius: 2px;
+    border-radius: 15px;
     font-size: 0.72rem;
     margin-bottom: 0.6rem;
   }
@@ -104,7 +118,7 @@
     background: transparent;
     color: var(--ink);
     padding: 0.5rem 0.8rem;
-    border-radius: 2px;
+    border-radius: 15px;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
   }
@@ -134,7 +148,7 @@
     font-size: 0.78rem;
     padding: 0.35rem 0.4rem;
     border: 1px solid var(--rule-strong);
-    border-radius: 2px;
+    border-radius: 15px;
     background: #fff;
     color: var(--ink);
   }
@@ -243,7 +257,7 @@
   .paper-wrap {
     background: var(--paper-card);
     border: 1px solid var(--rule);
-    border-radius: 3px;
+    border-radius: 15px;
     padding: 1.4rem 1.6rem 1.2rem;
   }
   .paper-toolbar {
@@ -305,22 +319,27 @@
     flex-wrap: wrap;
     gap: 0.6rem;
   }
-  .photo-thumb {
-    position: relative;
-    width: 180px;
-    height: 180px;
-    border-radius: 3px;
-    overflow: hidden;
-    border: 1px solid var(--rule);
-    background: #fff;
-  }
-  .photo-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    cursor: pointer;
-  }
+.photo-thumb {
+  width: 220px;           /* pick whatever size you want the frame to be */
+  height: 220px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 15px;
+  overflow: hidden;       /* crops anything that spills past the frame */
+  box-sizing: border-box;
+  background: #fff;
+}
+
+.photo-thumb img {
+  display: block;         /* removes the small baseline gap under inline images */
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  object-fit: cover;      /* fills the frame edge-to-edge, cropping overflow */
+  cursor: pointer;
+}
   .photo-remove {
     position: absolute;
     top: 2px;
@@ -395,11 +414,8 @@
   .lightbox img {
     max-width: 100%;
     max-height: 100%;
-    border-radius: 3px;
-  }
-  .hidden {
-    display : none;
+    border-radius: 15px;
   }
 
   ::-webkit-scrollbar { width: 8px; }
-  ::-webkit-scrollbar-thumb { background: var(--rule-strong); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--rule-strong); border-radius: 15px; }
