@@ -1,2 +1,4 @@
-# writingandquiz
-A website to pratice writing IELTS skills and training new vocabulary
+# Tập Viết
+Một website để luyện viết writing IELTS or whatever.
+
+Website: https://remadethemods.github.io/TapViet/
