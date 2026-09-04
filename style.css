@@ -1,4 +1,4 @@
-  :root {
+:root {
     --paper: #EDEAE1;
     --paper-card: #F7F4EC;
     --ink: #262420;
@@ -85,10 +85,14 @@ header.top {
     margin: 0 0 0.8rem;
     font-weight: 500;
   }
-
-  textarea#question {
+  textarea.type1 {
+	  min-height: 60px;
+  }
+  textarea.type2 {
+	  min-height: 180px;
+  }
+    textarea#question {
     width: 100%;
-    min-height: 180px;
     border: none;
     background: transparent;
     resize: vertical;
@@ -98,6 +102,7 @@ header.top {
     color: var(--ink);
     outline: none;
   }
+  
   textarea#question::placeholder { color: var(--ink-faint); }
 
   select.mono {
@@ -316,17 +321,19 @@ header.top {
   }
   .photos-grid {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
+    flex-direction: column;
+    gap: 0.8rem;
   }
 .photo-thumb {
-  width: 220px;           /* pick whatever size you want the frame to be */
-  height: 220px;
+  position: relative;     /* anchors the remove button */
+  width: 100%;
+  max-width: 480px;       /* bigger frame so charts/graphs stay legible */
+  min-height: 320px;
   margin: 0;
   padding: 0;
   border: 1px solid var(--rule);
   border-radius: 15px;
-  overflow: hidden;       /* crops anything that spills past the frame */
+  overflow: hidden;
   box-sizing: border-box;
   background: #fff;
 }
@@ -337,7 +344,7 @@ header.top {
   height: 100%;
   margin: 0;
   padding: 0;
-  object-fit: cover;      /* fills the frame edge-to-edge, cropping overflow */
+  object-fit: contain;    /* shows the full image uncropped, so nothing in a chart gets cut off */
   cursor: pointer;
 }
   .photo-remove {
@@ -419,3 +426,149 @@ header.top {
 
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-thumb { background: var(--rule-strong); border-radius: 15px; }
+
+  /*translator*/
+  .translator {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 20rem;
+    right: 0rem;
+    width: 280px;
+    max-height: calc(100vh - 8rem);
+    overflow-y: auto;
+    z-index: 50;
+    margin: 0;
+  }
+  @media (max-width: 1400px) {
+    .translator { right: 1rem; width: 280px; }
+  }
+  @media (max-width: 1100px) {
+    /* not enough room to float beside the essay — drop back into normal flow */
+    .translator {
+      position: static;
+      width: 100%;
+      max-height: none;
+      overflow-y: visible;
+    }
+  }
+  .translator-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 0.9rem;
+  }
+  .translator-header h2 { margin: 0; }
+  .translator-tagline {
+    font-size: 0.62rem;
+    color: var(--ink-faint);
+    text-transform: lowercase;
+  }
+
+  .translator-lang-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.9rem;
+  }
+  select.lang-select {
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--rule-strong);
+    background: #fff;
+    color: var(--ink);
+    border-radius: 15px;
+    font-size: 0.68rem;
+    cursor: pointer;
+  }
+  .swap-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px dashed var(--rule-strong);
+    background: #fff;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .swap-btn:hover {
+    border-color: var(--ribbon);
+    color: var(--ribbon);
+    background: #fff;
+    transform: rotate(180deg);
+  }
+
+  .translator-pane { margin-bottom: 0.8rem; }
+  .translator-pane .pane-label {
+    font-size: 0.62rem;
+    color: var(--ink-faint);
+    margin-bottom: 0.35rem;
+    min-height: 1em;
+  }
+  .translator-pane .pane-label .detected-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid var(--rule-strong);
+    border-radius: 20px;
+    padding: 0.1rem 0.55rem;
+  }
+  .translator-pane .pane-label .detected-badge .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--ribbon);
+  }
+
+  #t-source-text {
+    width: 100%;
+    min-height: 90px;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background: #fff;
+    resize: vertical;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--ink);
+    outline: none;
+    padding: 0.6rem 0.7rem;
+  }
+  #t-source-text::placeholder { color: var(--ink-faint); }
+  #t-source-text:focus { border-color: var(--ribbon-soft); }
+
+  .output-box {
+    min-height: 90px;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background: var(--ribbon-bg);
+    padding: 0.6rem 0.7rem;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+  .output-box.placeholder { color: var(--ink-faint); background: #fff; }
+  .output-box.error { color: var(--ribbon); background: #fff; }
+
+  .translator-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--rule);
+    padding-top: 0.7rem;
+    margin-top: 0.3rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .char-count { font-size: 0.62rem; color: var(--ink-faint); }
+  .translator-actions { display: flex; gap: 0.4rem; }
+  .translator-actions button { padding: 0.42rem 0.7rem; font-size: 0.66rem; }
+  #t-copy-btn.copied { border-color: var(--ribbon); color: var(--ribbon); }

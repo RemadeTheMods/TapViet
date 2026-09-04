@@ -25,12 +25,17 @@ if (typeof window.storage === 'undefined') {
   };
 }
 
+// Config
+const GEMINI_API_KEY = 'AQ.Ab8RN6J61bDnIJDopdf_mgqkLInvl-TbGa2gKQGd553Etc2VXw';
 
+let running = false;
 let currentEssayId = null;
 let currentPhotos = []; // { id, name, dataUrl }
 let timerInterval = null;
 let timerRemaining = 2400;
 let timerRunning = false;
+let timerCount = 0;
+let wpmInterval = null;
 
 const els = {
   question: document.getElementById('question'),
@@ -48,6 +53,7 @@ const els = {
   statStreak: document.getElementById('stat-streak'),
   statAvg: document.getElementById('stat-avg'),
   timerDisplay: document.getElementById('timer-display'),
+  timerCountDisplay: document.getElementById('m-timer'),
   timerToggle: document.getElementById('timer-toggle'),
   timerReset: document.getElementById('timer-reset'),
   timerLength: document.getElementById('timer-length'),
@@ -55,7 +61,7 @@ const els = {
   mChars: document.getElementById('m-chars'),
   mSentences: document.getElementById('m-sentences'),
   mParagraphs: document.getElementById('m-paragraphs'),
-  mRead: document.getElementById('m-read'),
+  mWPM: document.getElementById('m-wpm'),
   addPhotoBtn: document.getElementById('add-photo-btn'),
   photoInput: document.getElementById('photo-input'),
   photosGrid: document.getElementById('photos-grid'),
@@ -67,6 +73,12 @@ const els = {
 
 // Đổi bài 
 function change1() {
+  const bro = document.getElementById('question');
+  bro.className='type1';
+  
+  els.goalInput.value = 150;
+  updateMetrics();
+  
   const div = document.getElementById('photo');
   div.style.display = 'block'; 
 
@@ -77,6 +89,12 @@ function change1() {
   task2.className = 'ghost mono';
 }
 function change2() {
+  const bro = document.getElementById('question');
+  bro.className='type2';
+  
+  els.goalInput.value = 250;
+  updateMetrics();
+  
   const div = document.getElementById('photo');
   div.style.display = 'none'; 
   
@@ -105,21 +123,34 @@ function countParagraphs(text) {
   if (!trimmed) return 0;
   return trimmed.split(/\n\s*\n/).filter(p => p.trim().length > 0).length;
 }
-
 // update
+function updateTimerCount() {
+  if (!wpmInterval) {
+    wpmInterval = setInterval(() => {
+      if (running) {
+        timerCount++;
+        updateMetrics();
+        updateTimerDisplay();
+      }
+    }, 1000);
+  }
+}
+
 function updateMetrics() {
+  const min = timerCount/60;
   const text = els.essay.value;
   const words = countWords(text);
   const chars = text.length;
   const sentences = countSentences(text);
   const paragraphs = countParagraphs(text);
-  const readMins = Math.max(1, Math.round(words / 200));
+  const wordPM = Math.max(1, Math.round(words / min));
 
+  
   els.mWords.textContent = words.toLocaleString();
   els.mChars.textContent = chars.toLocaleString();
   els.mSentences.textContent = sentences.toLocaleString();
   els.mParagraphs.textContent = paragraphs.toLocaleString();
-  els.mRead.textContent = words === 0 ? '0 min' : readMins + ' min';
+  els.mWPM.textContent = words === 0 ? '0' : wordPM;
 
   const goal = Math.max(0, parseInt(els.goalInput.value) || 0);
   const pct = goal > 0 ? Math.min(100, Math.round((words / goal) * 100)) : 0;
@@ -143,6 +174,7 @@ function formatTime(secs) {
 
 function updateTimerDisplay() {
   els.timerDisplay.textContent = formatTime(timerRemaining);
+  els.timerCountDisplay.textContent = formatTime(timerCount);
 }
 
 function toggleTimer() {
@@ -366,6 +398,7 @@ function loadEssay(item) {
 
 function startNewEssay() {
   currentEssayId = null;
+  timerCount = 0;
   els.essayTitle.value = '';
   els.question.value = '';
   els.essay.value = '';
@@ -411,6 +444,12 @@ async function saveEssay() {
 }
 
 els.essay.addEventListener('input', updateMetrics);
+els.essay.addEventListener('input', () => {  if (els.essay.value == null) {
+    running = false;
+  } else {
+    running = true;
+  }
+});
 els.question.addEventListener('input', markUnsaved);
 els.essayTitle.addEventListener('input', markUnsaved);
 els.goalInput.addEventListener('input', updateMetrics);
@@ -440,3 +479,223 @@ document.addEventListener('keydown', (e) => {
 updateMetrics();
 updateTimerDisplay();
 loadHistory();
+updateTimerCount();
+
+//translator
+
+
+const T_LANGUAGES = [
+  { code: 'vi', name: 'Vietnamese' },
+  { code: 'en', name: 'English' },
+  { code: 'fr', name: 'French' },
+  { code: 'es', name: 'Spanish' },
+  { code: 'de', name: 'German' },
+  { code: 'ja', name: 'Japanese' },
+  { code: 'ko', name: 'Korean' },
+  { code: 'zh-Hans', name: 'Chinese (Simplified)' },
+  { code: 'zh-Hant', name: 'Chinese (Traditional)' },
+  { code: 'th', name: 'Thai' },
+  { code: 'id', name: 'Indonesian' },
+  { code: 'it', name: 'Italian' },
+  { code: 'pt', name: 'Portuguese' },
+  { code: 'ru', name: 'Russian' },
+  { code: 'ar', name: 'Arabic' },
+  { code: 'hi', name: 'Hindi' },
+  { code: 'nl', name: 'Dutch' },
+  { code: 'tr', name: 'Turkish' },
+  { code: 'pl', name: 'Polish' },
+  { code: 'sv', name: 'Swedish' },
+];
+
+const tEls = {
+  sourceLang: document.getElementById('t-source-lang'),
+  targetLang: document.getElementById('t-target-lang'),
+  swapBtn: document.getElementById('t-swap-btn'),
+  sourceText: document.getElementById('t-source-text'),
+  outputBox: document.getElementById('t-output-box'),
+  detectedWrap: document.getElementById('t-detected-wrap'),
+  charCount: document.getElementById('t-char-count'),
+  translateBtn: document.getElementById('t-translate-btn'),
+  copyBtn: document.getElementById('t-copy-btn'),
+};
+
+function tPopulateLangSelects() {
+  if (!tEls.sourceLang || !tEls.targetLang) return;
+  const autoOption = '<option value="auto">Detect language</option>';
+  const opts = T_LANGUAGES.map(l => '<option value="' + l.code + '">' + l.name + '</option>').join('');
+  tEls.sourceLang.innerHTML = autoOption + opts;
+  tEls.targetLang.innerHTML = opts;
+  tEls.sourceLang.value = 'vi';
+  tEls.targetLang.value = 'en';
+}
+
+function tLangName(code) {
+  if (code === 'auto') return null;
+  const found = T_LANGUAGES.find(l => l.code === code);
+  return found ? found.name : code;
+}
+
+function tUpdateCharCount() {
+  if (!tEls.sourceText || !tEls.charCount) return;
+  const len = tEls.sourceText.value.length;
+  tEls.charCount.textContent = len.toLocaleString() + ' characters';
+}
+
+function tSetLoading(isLoading) {
+  if (!tEls.translateBtn) return;
+  tEls.translateBtn.disabled = isLoading;
+  tEls.translateBtn.textContent = isLoading ? 'Translating…' : 'Translate';
+}
+
+function tShowOutput(text, { isError = false, isPlaceholder = false } = {}) {
+  if (!tEls.outputBox) return;
+  tEls.outputBox.textContent = text;
+  tEls.outputBox.classList.toggle('error', isError);
+  tEls.outputBox.classList.toggle('placeholder', isPlaceholder);
+  if (tEls.copyBtn) {
+    tEls.copyBtn.disabled = isError || isPlaceholder || !text;
+  }
+}
+
+function tShowDetectedBadge(name) {
+  if (!tEls.detectedWrap) return;
+  if (!name) {
+    tEls.detectedWrap.innerHTML = '';
+    return;
+  }
+  tEls.detectedWrap.innerHTML =
+    '<span class="detected-badge"><span class="dot"></span>detected: ' + name + '</span>';
+}
+
+function tExtractJson(raw) {
+  const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim();
+  return JSON.parse(cleaned);
+}
+
+async function tTranslate() {
+  if (!tEls.sourceText) return;
+  const text = tEls.sourceText.value.trim();
+  if (!text) {
+    tShowOutput('Write something above first.', { isPlaceholder: true });
+    return;
+  }
+
+  const sourceCode = tEls.sourceLang.value;
+  const targetCode = tEls.targetLang.value;
+  const targetName = tLangName(targetCode);
+  const sourceName = tLangName(sourceCode); // null if auto
+
+  tSetLoading(true);
+  tShowDetectedBadge(null);
+  tShowOutput('Translating…', { isPlaceholder: true });
+
+  const instruction = sourceName
+    ? 'Translate the text from ' + sourceName + ' into ' + targetName + '.'
+    : 'Detect the language of the text, then translate it into ' + targetName + '.';
+
+  const systemPrompt =
+    'You are a precise translation engine embedded in an app. ' + instruction +
+    ' Preserve the original meaning, tone, and paragraph breaks — do not summarize, ' +
+    'add commentary, or explain word choices. Respond with ONLY a raw JSON object ' +
+    'in exactly this shape: ' +
+    '{"detectedLanguageName": "<name of the source language, in English>", "translation": "<the translated text>"}';
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        },
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: text }]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: 1000,
+          responseMimeType: 'application/json'
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(`Request failed: ${response.status} - ${errData.error?.message || ''}`);
+    }
+
+    const data = await response.json();
+    const raw = data.candidates?.[0]?.content?.parts
+      ?.map(block => block.text || '')
+      .filter(Boolean)
+      .join('\n') || '';
+
+    const parsed = tExtractJson(raw);
+    tShowOutput(parsed.translation || '(no translation returned)');
+    if (sourceCode === 'auto') {
+      tShowDetectedBadge(parsed.detectedLanguageName || null);
+    }
+  } catch (err) {
+    console.error('Translation error:', err);
+    tShowOutput('Translation failed — try again in a moment.', { isError: true });
+  } finally {
+    tSetLoading(false);
+  }
+}
+
+function tSwapLanguages() {
+  if (!tEls.sourceLang || !tEls.targetLang) return;
+  const srcVal = tEls.sourceLang.value;
+  const tgtVal = tEls.targetLang.value;
+  tEls.sourceLang.value = tgtVal;
+  tEls.sourceLang.value = srcVal === 'auto' ? tgtVal : srcVal;
+
+  const currentOutput = (tEls.outputBox && (tEls.outputBox.classList.contains('placeholder') || tEls.outputBox.classList.contains('error')))
+    ? ''
+    : (tEls.outputBox ? tEls.outputBox.textContent : '');
+
+  if (currentOutput && tEls.sourceText) {
+    tEls.sourceText.value = currentOutput;
+    tUpdateCharCount();
+  }
+  tShowDetectedBadge(null);
+  tShowOutput('Your translation will appear here.', { isPlaceholder: true });
+}
+
+async function tCopyTranslation() {
+  if (!tEls.outputBox) return;
+  const text = tEls.outputBox.textContent;
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    if (tEls.copyBtn) {
+      tEls.copyBtn.textContent = 'Copied';
+      tEls.copyBtn.classList.add('copied');
+      setTimeout(() => {
+        tEls.copyBtn.textContent = 'Copy';
+        tEls.copyBtn.classList.remove('copied');
+      }, 1500);
+    }
+  } catch (e) {
+    console.error('Copy failed', e);
+  }
+}
+
+tEls.sourceText.addEventListener('input', tUpdateCharCount);
+tEls.translateBtn.addEventListener('click', tTranslate);
+tEls.swapBtn.addEventListener('click', tSwapLanguages);
+tEls.copyBtn.addEventListener('click', tCopyTranslation);
+tEls.sourceText.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      tTranslate();
+    }
+    });
+
+tPopulateLangSelects();
+tUpdateCharCount();
+tShowOutput('Your translation will appear here.', { isPlaceholder: true });
