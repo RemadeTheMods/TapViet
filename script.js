@@ -1,29 +1,3 @@
-require('dotenv').config();
-const express = require('express');
-const app = express();
-
-app.use(express.json());
-
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-app.post('/api/grade', async (req, res) => {
-  try {
-    const url = 'http://localhost:3000/api/grade';
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body)
-    });
-
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to process request' });
-  }
-});
-
-app.listen(3000, () => console.log('Server running on port 3000'));
 
 
 if (typeof window.storage === 'undefined') {
@@ -617,26 +591,18 @@ async function tTranslate() {
   try {
     const url = 'http://localhost:3000/api/grade';
     
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: systemPrompt }]
-        },
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: text }]
-          }
-        ],
-        generationConfig: {
-          maxOutputTokens: 1000,
-          responseMimeType: 'application/json'
-        }
-      })
-    });
-
+   const response = await fetch('/api/translate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    contents: [{ role: 'user', parts: [{ text: text }] }],
+    generationConfig: {
+      maxOutputTokens: 1000,
+      responseMimeType: 'application/json'
+    }
+  })
+});
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
       throw new Error(`Request failed: ${response.status} - ${errData.error?.message || ''}`);
@@ -831,48 +797,18 @@ async function gGradeEssay() {
   try {
     const url = 'http://localhost:3000/api/grade';
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: rubric }]
-        },
-        contents: [
-          {
-            role: 'user',
-            parts: userParts
-          }
-        ],
-generationConfig: {
-  maxOutputTokens: 4000,
-  responseMimeType: 'application/json',
-  responseSchema: {
-    type: "OBJECT",
-    properties: {
-      overallBand: { type: "NUMBER" },
-      criteria: {
-        type: "ARRAY",
-        items: {
-          type: "OBJECT",
-          properties: {
-            name: { type: "STRING" },
-            band: { type: "NUMBER" },
-            feedback: { type: "STRING" }
-          },
-          required: ["name", "band", "feedback"]
-        }
-      },
-      suggestions: {
-        type: "ARRAY",
-        items: { type: "STRING" }
-      }
-    },
-    required: ["overallBand", "criteria", "suggestions"]
-  }
-}
-      })
-    });
+const response = await fetch('/api/grade', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    systemInstruction: { parts: [{ text: rubric }] },
+    contents: [{ role: 'user', parts: userParts }],
+    generationConfig: {
+      maxOutputTokens: 4000,
+      responseMimeType: 'application/json'
+    }
+  })
+});
 
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
@@ -889,7 +825,7 @@ generationConfig: {
     gRenderResult(parsed);
   } catch (err) {
     console.error('Grading error:', err);
-    gShowStatus('Grading failed — try again in a moment.', true);
+    gShowStatus('Grading failed.', true);
   } finally {
     gEls.gradeBtn.disabled = false;
     gEls.gradeBtn.textContent = 'Grade';
