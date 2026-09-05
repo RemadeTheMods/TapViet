@@ -427,7 +427,7 @@ header.top {
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-thumb { background: var(--rule-strong); border-radius: 15px; }
 
-  /*translator*/
+  /* --- Par Avion translator --- */
   .translator {
     display: flex;
     flex-direction: column;
@@ -439,9 +439,48 @@ header.top {
     overflow-y: auto;
     z-index: 50;
     margin: 0;
+    transition: transform 0.32s ease, opacity 0.32s ease;
+    transform: translateX(0);
+    opacity: 1;
   }
+  .translator.collapsed {
+    transform: translateX(calc(100% + 2rem));
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .translator-toggle {
+    position: fixed;
+    top: 20rem;
+    right: calc(-0.5rem + 300px - 28px);
+    width: 28px;
+    height: 56px;
+    border-radius: 8px 0 0 8px;
+    border: 1px solid var(--rule-strong);
+    border-right: none;
+    background: var(--paper-card);
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 60;
+    padding: 0;
+    font-size: 0.9rem;
+    transition: right 0.32s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .translator-toggle:hover { color: var(--ribbon); border-color: var(--ribbon-soft); }
+  .translator-toggle.collapsed { right: 2rem; }
+  .translator-toggle .arrow-icon {
+    display: inline-block;
+    transition: transform 0.32s ease;
+  }
+  .translator-toggle.collapsed .arrow-icon { transform: rotate(180deg); }
+
   @media (max-width: 1400px) {
     .translator { right: 1rem; width: 280px; }
+    .translator-toggle { right: calc(1rem + 280px - 14px); }
+    .translator-toggle.collapsed { right: 1rem; }
   }
   @media (max-width: 1100px) {
     /* not enough room to float beside the essay — drop back into normal flow */
@@ -450,7 +489,11 @@ header.top {
       width: 100%;
       max-height: none;
       overflow-y: visible;
+      transform: none !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
     }
+    .translator-toggle { display: none; }
   }
   .translator-header {
     display: flex;
@@ -572,3 +615,96 @@ header.top {
   .translator-actions { display: flex; gap: 0.4rem; }
   .translator-actions button { padding: 0.42rem 0.7rem; font-size: 0.66rem; }
   #t-copy-btn.copied { border-color: var(--ribbon); color: var(--ribbon); }
+  
+/* cham diem */
+.grading-panel {
+  border-top: 1px solid var(--rule);
+  margin-top: 0.9rem;
+  padding-top: 1.1rem;
+}
+.grading-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.grading-header h2 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  margin: 0;
+  font-weight: 500;
+}
+.grading-overall {
+  font-size: 1.3rem;
+  color: var(--ribbon);
+  font-weight: 500;
+}
+.grading-criteria {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+@media (max-width: 640px) {
+  .grading-criteria { grid-template-columns: 1fr; }
+}
+.grading-criterion {
+  background: var(--paper-card);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 0.8rem 0.9rem;
+}
+.grading-criterion .gc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.35rem;
+}
+.grading-criterion .gc-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.66rem;
+  color: var(--ink-soft);
+}
+.grading-criterion .gc-band {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--ribbon);
+  font-weight: 500;
+}
+.grading-criterion .gc-feedback {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 0;
+}
+.grading-suggestions {
+  background: var(--ribbon-bg);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+}
+.grading-suggestions h3 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  margin: 0 0 0.5rem;
+  font-weight: 500;
+}
+.grading-suggestions ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+.grading-suggestions li {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--ink);
+  margin-bottom: 0.35rem;
+}
+.grading-status {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+.grading-status.error { color: var(--ribbon); }

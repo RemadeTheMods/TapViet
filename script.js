@@ -1,3 +1,31 @@
+require('dotenv').config();
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+app.post('/api/grade', async (req, res) => {
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to process request' });
+  }
+});
+
+app.listen(3000, () => console.log('Server running on port 3000'));
+
+
 if (typeof window.storage === 'undefined') {
   window.storage = {
     async get(key) {
@@ -25,9 +53,6 @@ if (typeof window.storage === 'undefined') {
   };
 }
 
-// Config
-const GEMINI_API_KEY = 'AQ.Ab8RN6J61bDnIJDopdf_mgqkLInvl-TbGa2gKQGd553Etc2VXw';
-
 let running = false;
 let currentEssayId = null;
 let currentPhotos = []; // { id, name, dataUrl }
@@ -36,6 +61,7 @@ let timerRemaining = 2400;
 let timerRunning = false;
 let timerCount = 0;
 let wpmInterval = null;
+let currentTaskType = 'task1'; // Default task type tracking
 
 const els = {
   question: document.getElementById('question'),
@@ -67,14 +93,13 @@ const els = {
   photosGrid: document.getElementById('photos-grid'),
   lightbox: document.getElementById('lightbox'),
   lightboxImg: document.getElementById('lightbox-img'),
-  
 };
-
 
 // Đổi bài 
 function change1() {
+  currentTaskType = 'task1';
   const bro = document.getElementById('question');
-  bro.className='type1';
+  bro.className = 'type1';
   
   els.goalInput.value = 150;
   updateMetrics();
@@ -88,9 +113,11 @@ function change1() {
   task1.className = 'mono';
   task2.className = 'ghost mono';
 }
+
 function change2() {
+  currentTaskType = 'task2';
   const bro = document.getElementById('question');
-  bro.className='type2';
+  bro.className = 'type2';
   
   els.goalInput.value = 250;
   updateMetrics();
@@ -111,6 +138,7 @@ function countWords(text) {
   if (!trimmed) return 0;
   return trimmed.split(/\s+/).length;
 }
+
 function countSentences(text) {
   const trimmed = text.trim();
   if (!trimmed) return 0;
@@ -118,11 +146,13 @@ function countSentences(text) {
   if (matches) return matches.length;
   return trimmed.length > 0 ? 1 : 0;
 }
+
 function countParagraphs(text) {
   const trimmed = text.trim();
   if (!trimmed) return 0;
   return trimmed.split(/\n\s*\n/).filter(p => p.trim().length > 0).length;
 }
+
 // update
 function updateTimerCount() {
   if (!wpmInterval) {
@@ -137,7 +167,7 @@ function updateTimerCount() {
 }
 
 function updateMetrics() {
-  const min = timerCount/60;
+  const min = timerCount / 60;
   const text = els.essay.value;
   const words = countWords(text);
   const chars = text.length;
@@ -145,7 +175,6 @@ function updateMetrics() {
   const paragraphs = countParagraphs(text);
   const wordPM = Math.max(1, Math.round(words / min));
 
-  
   els.mWords.textContent = words.toLocaleString();
   els.mChars.textContent = chars.toLocaleString();
   els.mSentences.textContent = sentences.toLocaleString();
@@ -160,11 +189,13 @@ function updateMetrics() {
   markUnsaved();
   return { words, chars, sentences, paragraphs };
 }
+
 // save
 function markUnsaved() {
   els.saveStatus.textContent = 'unsaved changes';
   els.saveStatus.classList.remove('saved');
 }
+
 // tg
 function formatTime(secs) {
   const m = Math.floor(secs / 60).toString().padStart(2, '0');
@@ -286,12 +317,13 @@ function openLightbox(src) {
   els.lightboxImg.src = src;
   els.lightbox.classList.add('open');
 }
+
 function closeLightbox() {
   els.lightbox.classList.remove('open');
   els.lightboxImg.src = '';
 }
 
-//storage
+// storage
 
 async function getAllEssayIds() {
   try {
@@ -444,7 +476,8 @@ async function saveEssay() {
 }
 
 els.essay.addEventListener('input', updateMetrics);
-els.essay.addEventListener('input', () => {  if (els.essay.value == null) {
+els.essay.addEventListener('input', () => { 
+  if (els.essay.value == null) {
     running = false;
   } else {
     running = true;
@@ -481,30 +514,11 @@ updateTimerDisplay();
 loadHistory();
 updateTimerCount();
 
-//translator
-
+// translator
 
 const T_LANGUAGES = [
   { code: 'vi', name: 'Vietnamese' },
   { code: 'en', name: 'English' },
-  { code: 'fr', name: 'French' },
-  { code: 'es', name: 'Spanish' },
-  { code: 'de', name: 'German' },
-  { code: 'ja', name: 'Japanese' },
-  { code: 'ko', name: 'Korean' },
-  { code: 'zh-Hans', name: 'Chinese (Simplified)' },
-  { code: 'zh-Hant', name: 'Chinese (Traditional)' },
-  { code: 'th', name: 'Thai' },
-  { code: 'id', name: 'Indonesian' },
-  { code: 'it', name: 'Italian' },
-  { code: 'pt', name: 'Portuguese' },
-  { code: 'ru', name: 'Russian' },
-  { code: 'ar', name: 'Arabic' },
-  { code: 'hi', name: 'Hindi' },
-  { code: 'nl', name: 'Dutch' },
-  { code: 'tr', name: 'Turkish' },
-  { code: 'pl', name: 'Polish' },
-  { code: 'sv', name: 'Swedish' },
 ];
 
 const tEls = {
@@ -583,7 +597,7 @@ async function tTranslate() {
   const sourceCode = tEls.sourceLang.value;
   const targetCode = tEls.targetLang.value;
   const targetName = tLangName(targetCode);
-  const sourceName = tLangName(sourceCode); // null if auto
+  const sourceName = tLangName(sourceCode);
 
   tSetLoading(true);
   tShowDetectedBadge(null);
@@ -641,7 +655,7 @@ async function tTranslate() {
     }
   } catch (err) {
     console.error('Translation error:', err);
-    tShowOutput('Translation failed — try again in a moment.', { isError: true });
+    tShowOutput('Translation failed.', { isError: true });
   } finally {
     tSetLoading(false);
   }
@@ -690,12 +704,196 @@ tEls.translateBtn.addEventListener('click', tTranslate);
 tEls.swapBtn.addEventListener('click', tSwapLanguages);
 tEls.copyBtn.addEventListener('click', tCopyTranslation);
 tEls.sourceText.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      e.preventDefault();
-      tTranslate();
-    }
-    });
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    tTranslate();
+  }
+});
 
 tPopulateLangSelects();
 tUpdateCharCount();
 tShowOutput('Your translation will appear here.', { isPlaceholder: true });
+
+const tToggleBtn = document.getElementById('translator-toggle');
+const tBox = document.getElementById('new-box');
+let tOpen = true;
+
+tToggleBtn.addEventListener('click', () => {
+  tOpen = !tOpen;
+  tBox.classList.toggle('collapsed', !tOpen);
+  tToggleBtn.classList.toggle('collapsed', !tOpen);
+});
+
+// cham diem
+
+const gEls = {
+  gradeBtn: document.getElementById('grade-btn'),
+  panel: document.getElementById('grading-panel'),
+  overall: document.getElementById('grading-overall'),
+  criteria: document.getElementById('grading-criteria'),
+  suggestions: document.getElementById('grading-suggestions'),
+};
+
+function gDataUrlToPart(dataUrl) {
+  const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.*)$/.exec(dataUrl);
+  if (!match) return null;
+  return {
+    inlineData: {
+      mimeType: match[1],
+      data: match[2]
+    }
+  };
+}
+
+function gExtractJson(raw) {
+  let cleaned = raw.trim();
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  }
+  return JSON.parse(cleaned);
+}
+
+function gShowStatus(text, isError) {
+  gEls.panel.style.display = 'block';
+  gEls.overall.textContent = '–';
+  gEls.criteria.innerHTML = '<p class="grading-status' + (isError ? ' error' : '') + '">' + text + '</p>';
+  gEls.suggestions.innerHTML = '';
+}
+
+function gRenderResult(result) {
+  gEls.panel.style.display = 'block';
+  gEls.overall.textContent = result.overallBand + ' / 9';
+
+  gEls.criteria.innerHTML = (result.criteria || []).map(c =>
+    '<div class="grading-criterion">' +
+      '<div class="gc-head"><span class="gc-name">' + escapeHtml(c.name) + '</span>' +
+      '<span class="gc-band">' + escapeHtml(String(c.band)) + '</span></div>' +
+      '<p class="gc-feedback">' + escapeHtml(c.feedback) + '</p>' +
+    '</div>'
+  ).join('');
+
+  const suggestions = result.suggestions || [];
+  gEls.suggestions.innerHTML = suggestions.length
+    ? '<h3>to raise your band</h3><ul>' + suggestions.map(s => '<li>' + escapeHtml(s) + '</li>').join('') + '</ul>'
+    : '';
+}
+
+async function gGradeEssay() {
+  const essayText = els.essay.value.trim();
+  const question = els.question.value.trim();
+
+  if (essayText.length === 0) {
+    gShowStatus('Write your essay first, then grade it.', false);
+    return;
+  }
+
+  const isTask1 = currentTaskType === 'task1';
+  const taskLabel = isTask1 ? 'IELTS Writing Task 1' : 'IELTS Writing Task 2';
+  const responseCriterionName = isTask1 ? 'Task Achievement' : 'Task Response';
+
+  gEls.gradeBtn.disabled = true;
+  gEls.gradeBtn.textContent = 'Grading…';
+  gShowStatus('Reading your essay…', false);
+
+  const rubric =
+    'Score this ' + taskLabel + ' response using the official IELTS Writing band descriptors (0–9 scale, ' +
+    'half-band increments like 6.5 allowed), across exactly these four criteria in this order: ' +
+    '"' + responseCriterionName + '", "Coherence and Cohesion", "Lexical Resource", "Grammatical Range and Accuracy". ' +
+    (isTask1
+      ? 'For "' + responseCriterionName + '", judge how accurately and completely the response describes the ' +
+        'attached chart/graph/diagram image(s) — check the actual data and trends shown in the image against what the essay claims. '
+      : 'For "' + responseCriterionName + '", judge how well the response answers the given question with a clear position, relevant ideas, and support. ') +
+    'Also compute an overall band as the rounded average of the four criteria (nearest 0.5). ' +
+    'Respond with ONLY a raw JSON object in exactly this shape: ' +
+    '{"overallBand": <number>, "criteria": [{"name": "<criterion name>", "band": <number>, "feedback": "<2-3 sentence justification>"}, ...], ' +
+    '"suggestions": ["<specific actionable tip>", "<specific actionable tip>", "<specific actionable tip>"]}';
+
+  const userParts = [];
+
+  if (isTask1 && currentPhotos.length > 0) {
+    currentPhotos.slice(0, 3).forEach(photo => {
+      const part = gDataUrlToPart(photo.dataUrl);
+      if (part) userParts.push(part);
+    });
+  }
+
+  let promptText = 'Question given to the student:\n' + (question || '(no question entered)') +
+    '\n\nStudent\'s essay:\n' + essayText;
+  if (isTask1 && userParts.length > 0) {
+    promptText += '\n\n(The chart/graph referenced above is attached as image input.)';
+  } else if (isTask1 && currentPhotos.length === 0) {
+    promptText += '\n\n(No chart image was attached — grade Task Achievement based on the text alone, ' +
+      'and note in your feedback that you could not verify data accuracy without the chart.)';
+  }
+  
+  userParts.push({ text: promptText });
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: rubric }]
+        },
+        contents: [
+          {
+            role: 'user',
+            parts: userParts
+          }
+        ],
+generationConfig: {
+  maxOutputTokens: 4000,
+  responseMimeType: 'application/json',
+  responseSchema: {
+    type: "OBJECT",
+    properties: {
+      overallBand: { type: "NUMBER" },
+      criteria: {
+        type: "ARRAY",
+        items: {
+          type: "OBJECT",
+          properties: {
+            name: { type: "STRING" },
+            band: { type: "NUMBER" },
+            feedback: { type: "STRING" }
+          },
+          required: ["name", "band", "feedback"]
+        }
+      },
+      suggestions: {
+        type: "ARRAY",
+        items: { type: "STRING" }
+      }
+    },
+    required: ["overallBand", "criteria", "suggestions"]
+  }
+}
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(`Request failed: ${response.status} - ${errData.error?.message || ''}`);
+    }
+
+    const data = await response.json();
+    const raw = data.candidates?.[0]?.content?.parts
+      ?.map(block => block.text || '')
+      .filter(Boolean)
+      .join('\n') || '';
+
+    const parsed = gExtractJson(raw);
+    gRenderResult(parsed);
+  } catch (err) {
+    console.error('Grading error:', err);
+    gShowStatus('Grading failed — try again in a moment.', true);
+  } finally {
+    gEls.gradeBtn.disabled = false;
+    gEls.gradeBtn.textContent = 'Grade';
+  }
+}
+
+gEls.gradeBtn.addEventListener('click', gGradeEssay);

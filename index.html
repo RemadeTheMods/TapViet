@@ -105,12 +105,22 @@
         <input type="text" id="essay-title" class="title-input" placeholder="Essay name">
         <div class="toolbar-actions">
           <button class="ghost mono" id="new-essay-btn">New</button>
+          <button class="ghost mono" id="grade-btn">Grade</button>
           <button class="primary mono" id="save-btn">Save</button>
         </div>
       </div>
 
-      <textarea id="essay" placeholder="Start writing here."></textarea>
+<textarea id="essay" placeholder="Start writing here."></textarea>
 
+<div class="grading-panel" id="grading-panel" style="display:none;">
+  <div class="grading-header">
+    <h2 class="mono">AI band score</h2>
+    <span class="mono grading-overall" id="grading-overall">–</span>
+  </div>
+  <div class="grading-criteria" id="grading-criteria"></div>
+  <div class="grading-suggestions" id="grading-suggestions"></div>
+</div>
+	  
       <div class="paper-footer">
         <div class="metrics">
           <span class="metric"><b id="m-words">0</b> words</span>
@@ -124,6 +134,10 @@
       </div>
 	  
     </div>
+	
+    <button class="translator-toggle" id="translator-toggle" title="Show/hide translator" type="button">
+      <span class="arrow-icon">›</span>
+    </button>
 	
 	<div class="translator panel" id="new-box">
         <div class="translator-header">
