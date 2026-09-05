@@ -615,7 +615,7 @@ async function tTranslate() {
     '{"detectedLanguageName": "<name of the source language, in English>", "translation": "<the translated text>"}';
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const url = 'http://localhost:3000/api/grade';
     
     const response = await fetch(url, {
       method: 'POST',
@@ -829,7 +829,7 @@ async function gGradeEssay() {
   userParts.push({ text: promptText });
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const url = 'http://localhost:3000/api/grade';
 
     const response = await fetch(url, {
       method: 'POST',
